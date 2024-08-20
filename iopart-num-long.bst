@@ -61,6 +61,9 @@
 %   -- iopart-num.tex: update package recommendation from citesort to cite, update natbib
 %      guidelines, update to reflect iopart-num-long, update IOP author guidelines reference
 %   -- iopart-num.bib: add titles, verify journal references
+% Version 2.2 by Serhiy O. Semerikov
+%   -- issue replaced by number
+%   -- added DOI support
 %
 % TODO
 %
@@ -122,6 +125,7 @@ ENTRY
     booktitle
     chapter
     collaboration
+    doi
     edition
     editor
     eid
@@ -147,7 +151,7 @@ ENTRY
     volume
     year
 %mc
-    issue
+%    issue
     section
     epilog
     volumetitle
@@ -635,6 +639,14 @@ FUNCTION {format.eprint}
       ")"
       *
     }
+  if$
+}
+
+% Add a new function to format the DOI as a URL:
+FUNCTION {format.doi}
+{ doi empty$
+    { "" }
+    { "DOI \url{https://doi.org/" doi * "}" * }
   if$
 }
 
@@ -1136,12 +1148,12 @@ FUNCTION {format.vol.num.pages}
     }
   if$
   bolden
-%mc  number "number" bibinfo.check duplicate$ empty$ 'skip$
-  issue "issue" bibinfo.check duplicate$ empty$ 'skip$
+   number "number" bibinfo.check duplicate$ empty$ 'skip$
+%  issue "issue" bibinfo.check duplicate$ empty$ 'skip$
     {
       swap$ duplicate$ empty$
-%mc        { "there's a number but no volume in " cite$ * warning$ }
-        { "there's an issue but no volume in " cite$ * warning$ }
+        { "there's a number but no volume in " cite$ * warning$ }
+%        { "there's an issue but no volume in " cite$ * warning$ }
         'skip$
       if$
       swap$
@@ -1382,6 +1394,7 @@ FUNCTION {article}
     }
   if$
   format.issn output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1414,6 +1427,7 @@ FUNCTION {book}
   if$
   %% format.edition output
   format.isbn output
+  format.doi output  % Add this line to include DOI for books
   format.note output
   format.eprint output
   format.url output
@@ -1428,6 +1442,7 @@ FUNCTION {booklet}
   howpublished "howpublished" bibinfo.check output
   address "address" bibinfo.check output
   format.isbn output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1467,6 +1482,7 @@ FUNCTION {inbook}
     { format.isbn output }
     'skip$
   if$
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1499,6 +1515,7 @@ FUNCTION {incollection}
       format.chapter.pages output
     }
   if$
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1536,6 +1553,7 @@ FUNCTION {inproceedings}
       format.pages output
     }
   if$
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1571,6 +1589,7 @@ FUNCTION {manual}
     }
   if$
   format.edition output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1587,6 +1606,7 @@ FUNCTION {mastersthesis}
   bbl.mthesis format.thesis.type output.nonnull
   school "school" bibinfo.warn output
   address "address" bibinfo.check output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1599,6 +1619,7 @@ FUNCTION {misc}
   format.date output
   format.title output
   howpublished "howpublished" bibinfo.check output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1615,6 +1636,7 @@ FUNCTION {phdthesis}
   bbl.phdthesis format.thesis.type output.nonnull
   school "school" bibinfo.warn output
   address "address" bibinfo.check output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1653,6 +1675,7 @@ FUNCTION {proceedings}
   if$
   format.isbn output
   format.issn output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1669,6 +1692,7 @@ FUNCTION {techreport}
   format.tr.number output.nonnull
   institution "institution" bibinfo.warn output
   address "address" bibinfo.check output
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1682,6 +1706,7 @@ FUNCTION {unpublished}
   date.block
   format.title "title" output.check
 %mc  format.note "note" output.check
+  format.doi output %
   format.note output
   format.eprint output
   format.url output
@@ -1729,7 +1754,11 @@ FUNCTION {begin.bib}
   write$ newline$
   "\providecommand{\eprint}[2][arXiv]{#1:\linebreak[0]#2}"
   write$ newline$
-  "% Bibliography created with iopart-num v2.1+"
+  "% Format DOI"
+  write$ newline$
+  "\providecommand{\formatdoi}[1]{DOI \url{https://doi.org/#1}}"
+  write$ newline$
+    "% Bibliography created with iopart-num v2.1+"
   write$ newline$
   "% /biblio/bibtex/contrib/iopart-num"
   write$ newline$
